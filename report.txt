@@ -1,0 +1,16 @@
+Congestion control and reliable data transfer scheme:
+1. simple AIMD
+a new control window is set for every loop iteration based on occurrence of packet loss.
+If there is a packet loss (detected by 3 duplicated acks),
+then control window is divided by 2. Otherwise control window is increased by 1.
+2. error detection
+Client
+every loop iteration, client makes cwnd # of packets and send them all to the server.
+- Wait for an ACK from the server.
+  - if the ACK is greater than the current sequence number, it means earlier packets have been received by server and the current ACK is updated (if the ACK is within acceptable bounds)
+  - if the ACK is equal to the current sequence number, the packet is not yet received, and we keep track of the number of duplicate ACKs. if there are 3 duplicate ACKs, timeout immediately and send that packet indicated by the ACK to the server.
+  - if the ACK is less than the current sequence number, it is ignored.
+- if no ACK has been received before timeout (set to fixed 0.5 seconds), resend the current sequence packet.
+Server keeps track of packets for all packets received if the sequence number is within an accepted window (expected + half of the number of sequence numbers), marking it as received if it is not the current expected packet.
+- when it receives the expected packet, flush out all in-order packets to the output file and mark those sequence numbers as not received for the next cycle of sequence numbers.
+- always sends back the expected sequence number as ACK number to the client.
